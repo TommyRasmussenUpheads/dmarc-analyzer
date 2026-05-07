@@ -1,0 +1,14 @@
+{
+  "name": "dmarc-analyzer",
+  "version": "1.0.0",
+  "description": "DMARC rapport-analysator med Claude AI",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "express": "^4.19.2"
+  }
+}

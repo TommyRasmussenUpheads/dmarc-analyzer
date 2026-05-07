@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DMARC Analyzer</title>
+  <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.x/tabler-icons.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f8f7f4; --surface: #ffffff; --surface-2: #f1f0ec;
+      --border: #e2e0d8; --text: #1a1a18; --text-muted: #6b6a65;
+      --accent: #2563eb; --accent-bg: #eff6ff;
+      --success: #16a34a; --success-bg: #f0fdf4;
+      --danger: #dc2626; --danger-bg: #fef2f2;
+      --warning: #d97706; --warning-bg: #fffbeb;
+      --radius: 10px; --radius-sm: 6px;
+      --font: 'Inter', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #141413; --surface: #1e1e1c; --surface-2: #2a2a28;
+        --border: #3a3a37; --text: #f0efe9; --text-muted: #9a9993;
+        --accent-bg: #1e2d4a; --success-bg: #14261a;
+        --danger-bg: #2a1212; --warning-bg: #271f0a;
+      }
+    }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; padding: 2rem 1rem; }
+    .container { max-width: 900px; margin: 0 auto; }
+    header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
+    .logo { width: 40px; height: 40px; background: var(--accent); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; }
+    h1 { font-size: 20px; font-weight: 600; }
+    h1 span { font-weight: 400; color: var(--text-muted); font-size: 14px; display: block; margin-top: 2px; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 4px; margin-bottom: 1.5rem; background: var(--surface-2); padding: 4px; border-radius: var(--radius-sm); width: fit-content; }
+    .tab { padding: .5rem 1rem; font-size: 13px; font-weight: 500; border-radius: 6px; cursor: pointer; border: none; background: transparent; color: var(--text-muted); transition: all .15s; }
+    .tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .drop-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 3rem 2rem; text-align: center; cursor: pointer; transition: all .2s; background: var(--surface); margin-bottom: 1.5rem; }
+    .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: var(--accent-bg); }
+    .drop-zone i { font-size: 36px; color: var(--text-muted); display: block; margin-bottom: .75rem; }
+    .drop-zone p { font-size: 14px; color: var(--text-muted); }
+    .drop-zone strong { color: var(--text); }
+    #file-input { display: none; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
+    .card-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); margin-bottom: 1rem; }
+    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; margin-bottom: 1rem; }
+    .metric { background: var(--surface-2); border-radius: var(--radius-sm); padding: .875rem 1rem; }
+    .metric-label { font-size: 12px; color: var(--text-muted); margin-bottom: .25rem; }
+    .metric-value { font-size: 24px; font-weight: 600; }
+    .metric-value.good { color: var(--success); }
+    .metric-value.bad { color: var(--danger); }
+
+    .domain-name { font-size: 20px; font-weight: 600; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .domain-meta { font-size: 13px; color: var(--text-muted); margin-top: .375rem; }
+    .badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+    .badge-none { background: var(--warning-bg); color: var(--warning); }
+    .badge-quarantine { background: var(--accent-bg); color: var(--accent); }
+    .badge-reject { background: var(--success-bg); color: var(--success); }
+    .badge-info { background: var(--accent-bg); color: var(--accent); }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); padding: .5rem .75rem; border-bottom: 1px solid var(--border); }
+    td { padding: .625rem .75rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    .mono { font-family: var(--mono); font-size: 12px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: middle; }
+    .dot-pass { background: var(--success); }
+    .dot-fail { background: var(--danger); }
+    .disp-none { color: var(--accent); }
+    .disp-reject { color: var(--danger); }
+    .disp-quarantine { color: var(--warning); }
+
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: .75rem 1.5rem; border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; cursor: pointer; transition: all .15s; border: 1px solid transparent; }
+    .btn-primary { background: var(--accent); color: #fff; width: 100%; justify-content: center; margin-top: .5rem; }
+    .btn-primary:hover { opacity: .9; }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-sm { padding: .375rem .75rem; font-size: 12px; }
+    .btn-danger { background: var(--danger-bg); color: var(--danger); border-color: rgba(220,38,38,.2); }
+
+    .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .6s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .ai-output { font-size: 14px; line-height: 1.75; color: var(--text); }
+    .ai-output h2, .ai-output h3 { margin: 1rem 0 .5rem; font-size: 15px; }
+    .ai-output p { margin-bottom: .75rem; }
+    .ai-output ul { padding-left: 1.25rem; margin-bottom: .75rem; }
+    .ai-output li { margin-bottom: .25rem; }
+    .ai-output strong { font-weight: 600; }
+
+    .hidden { display: none; }
+
+    /* Logg */
+    .domain-row { cursor: pointer; transition: background .1s; }
+    .domain-row:hover td { background: var(--surface-2); }
+    .can-disable-row td { background: var(--success-bg) !important; }
+    .can-disable-badge { display: inline-flex; align-items: center; gap: 5px; background: var(--success-bg); color: var(--success); font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+    .pass-bar { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; margin-top: 4px; min-width: 60px; }
+    .pass-bar-fill { height: 100%; border-radius: 3px; transition: width .3s; }
+    .detail-row { background: var(--surface-2); }
+    .detail-row td { padding: 0; }
+    .detail-inner { padding: 1rem 1.25rem; font-size: 13px; }
+    .history-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: .5rem; }
+    .history-table th, .history-table td { padding: .375rem .75rem; border-bottom: 1px solid var(--border); text-align: left; }
+    .history-table tr:last-child td { border-bottom: none; }
+    .empty-state { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 14px; }
+    .empty-state i { font-size: 32px; display: block; margin-bottom: .75rem; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo"><i class="ti ti-shield-check"></i></div>
+    <h1>DMARC Analyzer <span>Last opp rapporter og spor domener over tid</span></h1>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('analyze')"><i class="ti ti-upload" style="margin-right:5px"></i>Analyser</button>
+    <button class="tab" onclick="switchTab('log')" id="log-tab"><i class="ti ti-history" style="margin-right:5px"></i>Logg</button>
+  </div>
+
+  <!-- ANALYSER TAB -->
+  <div class="tab-content active" id="tab-analyze">
+    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+      <i class="ti ti-file-zip"></i>
+      <p><strong>Slipp .gz eller .xml fil her</strong></p>
+      <p style="margin-top:.25rem;font-size:12px">DMARC XML-rapporter i .xml.gz eller .xml format</p>
+    </div>
+    <input type="file" id="file-input" accept=".gz,.xml.gz,.xml">
+
+    <div id="results" class="hidden">
+      <div class="card" id="domain-header-card"></div>
+      <div class="metrics" style="grid-template-columns:repeat(5,1fr)">
+        <div class="metric"><div class="metric-label">Totale meldinger</div><div class="metric-value" id="m-total">—</div></div>
+        <div class="metric"><div class="metric-label">DMARC pass-rate</div><div class="metric-value good" id="m-pass">—</div></div>
+        <div class="metric"><div class="metric-label">SPF pass-rate</div><div class="metric-value good" id="m-spf">—</div></div>
+        <div class="metric"><div class="metric-label">DKIM pass-rate</div><div class="metric-value good" id="m-dkim">—</div></div>
+        <div class="metric"><div class="metric-label">Unike sendere</div><div class="metric-value" id="m-senders">—</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Sendere i rapporten</div>
+        <div class="table-wrap">
+          <table><thead><tr>
+            <th>IP-adresse</th><th>Antall</th><th>SPF</th><th>DKIM</th><th>Disposisjon</th>
+          </tr></thead><tbody id="records-list"></tbody></table>
+        </div>
+        <button class="btn btn-primary" id="analyze-btn" onclick="runAnalysis()">
+          <i class="ti ti-sparkles"></i> Analyser med Claude AI
+        </button>
+      </div>
+      <div class="card hidden" id="ai-card">
+        <div class="card-title">AI-analyse</div>
+        <div class="ai-output" id="ai-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGG TAB -->
+  <div class="tab-content" id="tab-log">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+        <div class="card-title" style="margin-bottom:0">Domeneoversikt</div>
+        <button class="btn btn-sm" onclick="loadLog()" style="color:var(--text-muted);border-color:var(--border)">
+          <i class="ti ti-refresh"></i> Oppdater
+        </button>
+      </div>
+      <div id="log-content">
+        <div class="empty-state"><i class="ti ti-database-off"></i>Ingen analyser lagret ennå</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let parsedData = null;
+
+// ---- TABS ----
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['analyze','log'][i] === name));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'log') loadLog();
+}
+
+// ---- FILE HANDLING ----
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); handleFile(e.dataTransfer.files[0]); });
+document.getElementById('file-input').addEventListener('change', e => handleFile(e.target.files[0]));
+
+function handleFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      let xmlText;
+      const bytes = new Uint8Array(e.target.result);
+      if (file.name.endsWith('.gz')) {
+        const decompressed = fflate.decompressSync(bytes);
+        xmlText = new TextDecoder().decode(decompressed);
+      } else {
+        xmlText = new TextDecoder().decode(bytes);
+      }
+      parseAndDisplay(xmlText);
+    } catch(err) { alert('Feil ved lesing av fil: ' + err.message); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function g(el, tag) { return el?.querySelector(tag)?.textContent?.trim() || '—'; }
+function formatDate(ts) {
+  if (!ts || ts === '—') return ts;
+  const d = new Date(parseInt(ts) * 1000);
+  return isNaN(d) ? ts : d.toLocaleDateString('no-NO');
+}
+
+function parseAndDisplay(xmlText) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xmlText, 'application/xml');
+  const domain = g(doc, 'policy_published domain');
+  const policy = g(doc, 'policy_published p');
+  const sp = g(doc, 'policy_published sp');
+  const pct = g(doc, 'policy_published pct');
+  const orgName = g(doc, 'org_name');
+  const dateBegin = g(doc, 'date_range begin');
+  const dateEnd = g(doc, 'date_range end');
+  const records = Array.from(doc.querySelectorAll('record')).map(r => ({
+    ip: g(r, 'source_ip'), count: parseInt(g(r, 'count')) || 0,
+    disposition: g(r, 'policy_evaluated disposition'),
+    dkim: g(r, 'policy_evaluated dkim'), spf: g(r, 'policy_evaluated spf'),
+  }));
+  const total = records.reduce((s, r) => s + r.count, 0);
+  const passed = records.filter(r => r.dkim === 'pass' || r.spf === 'pass').reduce((s, r) => s + r.count, 0);
+  const spfPassed = records.filter(r => r.spf === 'pass').reduce((s, r) => s + r.count, 0);
+  const dkimPassed = records.filter(r => r.dkim === 'pass').reduce((s, r) => s + r.count, 0);
+  const passRate = total > 0 ? Math.round(passed / total * 100) : 0;
+  const spfPassRate = total > 0 ? Math.round(spfPassed / total * 100) : 0;
+  const dkimPassRate = total > 0 ? Math.round(dkimPassed / total * 100) : 0;
+  const failed = records.filter(r => r.dkim !== 'pass' && r.spf !== 'pass').reduce((s, r) => s + r.count, 0);
+  parsedData = { domain, policy, sp, pct, orgName, dateBegin, dateEnd, records, total, passed, passRate, spfPassRate, dkimPassRate, failed };
+
+  document.getElementById('m-total').textContent = total.toLocaleString('no-NO');
+  document.getElementById('m-pass').textContent = passRate + '%';
+  document.getElementById('m-spf').textContent = spfPassRate + '%';
+  document.getElementById('m-dkim').textContent = dkimPassRate + '%';
+  document.getElementById('m-pass').className = 'metric-value ' + (passRate >= 90 ? 'good' : passRate >= 70 ? '' : 'bad');
+  document.getElementById('m-senders').textContent = records.length;
+  const pc = policy === 'reject' ? 'reject' : policy === 'quarantine' ? 'quarantine' : 'none';
+  document.getElementById('domain-header-card').innerHTML = `
+    <div class="domain-name">${domain}
+      <span class="badge badge-${pc}">p=${policy}</span>
+      ${sp !== '—' ? `<span class="badge badge-info">sp=${sp}</span>` : ''}
+      ${pct !== '—' && pct !== '100' ? `<span class="badge badge-info">${pct}%</span>` : ''}
+    </div>
+    <div class="domain-meta">Rapportert av ${orgName} &nbsp;·&nbsp; ${formatDate(dateBegin)} – ${formatDate(dateEnd)}</div>`;
+  document.getElementById('records-list').innerHTML = records.slice(0, 30).map(r => `
+    <tr>
+      <td class="mono">${r.ip}</td>
+      <td>${r.count.toLocaleString('no-NO')}</td>
+      <td><span class="dot dot-${r.spf === 'pass' ? 'pass' : 'fail'}"></span>${r.spf}</td>
+      <td><span class="dot dot-${r.dkim === 'pass' ? 'pass' : 'fail'}"></span>${r.dkim}</td>
+      <td class="disp-${r.disposition}">${r.disposition}</td>
+    </tr>`).join('');
+  document.getElementById('results').classList.remove('hidden');
+  document.getElementById('ai-card').classList.add('hidden');
+}
+
+// ---- ANALYZE ----
+async function runAnalysis() {
+  if (!parsedData) return;
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Analyserer...';
+  const d = parsedData;
+  const prompt = `Analyser denne DMARC-rapporten:\n\n**Domene:** ${d.domain}\n**Policy:** p=${d.policy}${d.sp !== '—' ? ', sp=' + d.sp : ''}${d.pct !== '—' ? ', pct=' + d.pct + '%' : ''}\n**Rapporterende org:** ${d.orgName}\n**Periode:** ${formatDate(d.dateBegin)} – ${formatDate(d.dateEnd)}\n**Totale meldinger:** ${d.total}\n**DMARC pass-rate:** ${d.passRate}%
+**SPF pass-rate:** ${d.spfPassRate}%
+**DKIM pass-rate:** ${d.dkimPassRate}%\n**Feiler begge:** ${d.failed}\n**Sendere:**\n${d.records.slice(0,15).map(r => `- ${r.ip}: ${r.count} | SPF: ${r.spf} | DKIM: ${r.dkim} | Disp: ${r.disposition}`).join('\n')}`;
+
+  const aiCard = document.getElementById('ai-card');
+  const aiContent = document.getElementById('ai-content');
+  aiCard.classList.remove('hidden');
+  aiContent.innerHTML = '<div style="color:var(--text-muted)">Analyserer...</div>';
+
+  try {
+    const resp = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] }),
+    });
+    const data = await resp.json();
+    const text = String(data.content?.find(b => b.type === 'text')?.text || data.error || JSON.stringify(data));
+    aiContent.innerHTML = simpleMarkdown(text);
+
+    // Lagre til logg
+    await fetch('/api/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        domain: d.domain, passRate: d.passRate, spfPassRate: d.spfPassRate, dkimPassRate: d.dkimPassRate, totalMessages: d.total,
+        policy: d.policy, orgName: d.orgName,
+        aiConclusion: text.split('\n').find(l => l.includes('Konklusjon:'))?.replace(/\*\*/g, '').replace('Konklusjon:', '').trim() || text.slice(0, 200),
+      }),
+    });
+  } catch(err) {
+    aiContent.innerHTML = `<div style="color:var(--danger)">Feil: ${err.message}</div>`;
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ti ti-sparkles"></i> Analyser på nytt';
+}
+
+// ---- LOG ----
+async function loadLog() {
+  const container = document.getElementById('log-content');
+  container.innerHTML = '<div style="color:var(--text-muted);font-size:14px;padding:1rem">Laster...</div>';
+  try {
+    const resp = await fetch('/api/log');
+    const domains = await resp.json();
+    if (!domains.length) {
+      container.innerHTML = '<div class="empty-state"><i class="ti ti-database-off"></i>Ingen analyser lagret ennå</div>';
+      return;
+    }
+    container.innerHTML = `
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Domene</th><th>Sjekker</th><th>DMARC</th><th>SPF</th><th>DKIM</th><th>Policy</th><th>Sist sjekket</th><th>Status</th><th></th>
+          </tr></thead>
+          <tbody id="log-tbody">
+            ${domains.map(d => domainRow(d)).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  } catch(err) {
+    container.innerHTML = `<div style="color:var(--danger);padding:1rem">Feil: ${err.message}</div>`;
+  }
+}
+
+function domainRow(d) {
+  const barColor = d.latest_pass_rate >= 90 ? 'var(--success)' : d.latest_pass_rate >= 70 ? 'var(--warning)' : 'var(--danger)';
+  const spfColor = d.latest_spf_pass_rate >= 90 ? 'var(--success)' : d.latest_spf_pass_rate >= 70 ? 'var(--warning)' : 'var(--danger)';
+  const dkimColor = d.latest_dkim_pass_rate >= 90 ? 'var(--success)' : d.latest_dkim_pass_rate >= 70 ? 'var(--warning)' : 'var(--danger)';
+  const lastChecked = d.daysSinceLast === 0 ? 'I dag' : d.daysSinceLast === 1 ? 'I går' : `${d.daysSinceLast} dager siden`;
+  const streakInfo = d.currentlyAllPass && d.streakDays > 0
+    ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px">${d.streakDays} dager streak</div>` : '';
+  const statusBadge = d.canDisable
+    ? `<span class="can-disable-badge"><i class="ti ti-circle-check"></i> Kan slå av rapportering</span>`
+    : `<span style="font-size:12px;color:var(--text-muted)">${d.statusMsg}</span>`;
+  const pc = d.latest_policy === 'reject' ? 'reject' : d.latest_policy === 'quarantine' ? 'quarantine' : 'none';
+  return `
+    <tr class="domain-row ${d.canDisable ? 'can-disable-row' : ''}" onclick="toggleDetail('${d.domain}')">
+      <td><strong>${d.domain}</strong>${streakInfo}</td>
+      <td>${d.check_count}</td>
+      <td>
+        <div style="font-weight:600;color:${barColor}">${d.latest_pass_rate}%</div>
+        <div class="pass-bar"><div class="pass-bar-fill" style="width:${d.latest_pass_rate}%;background:${barColor}"></div></div>
+      </td>
+      <td>
+        <div style="font-weight:600;color:${spfColor}">${d.latest_spf_pass_rate ?? '—'}%</div>
+        <div class="pass-bar"><div class="pass-bar-fill" style="width:${d.latest_spf_pass_rate ?? 0}%;background:${spfColor}"></div></div>
+      </td>
+      <td>
+        <div style="font-weight:600;color:${dkimColor}">${d.latest_dkim_pass_rate ?? '—'}%</div>
+        <div class="pass-bar"><div class="pass-bar-fill" style="width:${d.latest_dkim_pass_rate ?? 0}%;background:${dkimColor}"></div></div>
+      </td>
+      <td><span class="badge badge-${pc}">${d.latest_policy || '—'}</span></td>
+      <td style="color:var(--text-muted);font-size:12px">${lastChecked}</td>
+      <td>${statusBadge}</td>
+      <td>
+        <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteDomain('${d.domain}')">
+          <i class="ti ti-trash"></i>
+        </button>
+      </td>
+    </tr>
+    <tr class="detail-row hidden" id="detail-${d.domain.replace(/\./g, '_')}">
+      <td colspan="9">
+        <div class="detail-inner">
+          <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:.5rem">SISTE AI-KONKLUSJON</div>
+          <div style="font-size:13px;margin-bottom:.75rem">${d.latest_conclusion || '—'}</div>
+          <div style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:.5rem">HISTORIKK</div>
+          <div id="history-${d.domain.replace(/\./g, '_')}"><span style="color:var(--text-muted);font-size:12px">Laster...</span></div>
+        </div>
+      </td>
+    </tr>`;
+}
+
+async function toggleDetail(domain) {
+  const key = domain.replace(/\./g, '_');
+  const row = document.getElementById('detail-' + key);
+  const isHidden = row.classList.contains('hidden');
+  document.querySelectorAll('.detail-row').forEach(r => r.classList.add('hidden'));
+  if (!isHidden) return;
+  row.classList.remove('hidden');
+  const histEl = document.getElementById('history-' + key);
+  try {
+    const resp = await fetch('/api/log/' + encodeURIComponent(domain));
+    const rows = await resp.json();
+    histEl.innerHTML = `<table class="history-table">
+      <thead><tr><th>Dato</th><th>DMARC</th><th>SPF</th><th>DKIM</th><th>Meldinger</th><th>Org</th></tr></thead>
+      <tbody>${rows.map(r => `
+        <tr>
+          <td>${new Date(r.checked_at).toLocaleString('no-NO')}</td>
+          <td style="color:${r.pass_rate === 100 ? 'var(--success)' : 'var(--danger)'};font-weight:600">${r.pass_rate}%</td>
+          <td style="color:${r.spf_pass_rate === 100 ? 'var(--success)' : 'var(--danger)'};font-weight:600">${r.spf_pass_rate ?? '—'}%</td>
+          <td style="color:${r.dkim_pass_rate === 100 ? 'var(--success)' : 'var(--danger)'};font-weight:600">${r.dkim_pass_rate ?? '—'}%</td>
+          <td>${r.total_messages}</td>
+          <td style="color:var(--text-muted)">${r.org_name || '—'}</td>
+        </tr>`).join('')}
+      </tbody></table>`;
+  } catch(e) { histEl.innerHTML = `<span style="color:var(--danger)">${e.message}</span>`; }
+}
+
+async function deleteDomain(domain) {
+  if (!confirm(`Slett all historikk for ${domain}?`)) return;
+  await fetch('/api/log/' + encodeURIComponent(domain), { method: 'DELETE' });
+  loadLog();
+}
+
+// ---- MARKDOWN ----
+function simpleMarkdown(md) {
+  return md
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>[\s\S]*?<\/li>(\n|$))+/g, m => `<ul>${m}</ul>`)
+    .replace(/\n\n+/g, '</p><p>')
+    .replace(/^(?!<[hup]|<\/[hup])(.+)$/gm, '<p>$1</p>')
+    .replace(/<p><\/p>/g, '')
+    .trim();
+}
+</script>
+</body>
+</html>

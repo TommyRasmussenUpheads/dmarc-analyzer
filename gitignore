@@ -1,0 +1,23 @@
+# Avhengigheter
+node_modules/
+
+# Miljøvariabler og hemmeligheter
+.env
+.env.*
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+data/
+
+# Docker
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
