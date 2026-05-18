@@ -1,0 +1,17 @@
+services:
+  web:
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_REPO:-upheads-int/ai-sandbox-template-portal}/web:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+
+# Host-agent attaches the cloudflared tunnel to this network on
+# ingress.publish. The literal slug must appear here (no host ports — the
+# tunnel reaches the container by service name on the project network).
+# See ASAI-1384 + repo-contract `cf-ingress-*` rules.
+networks:
+  default:
+    name: asai-proj-dmarc-sjekk
