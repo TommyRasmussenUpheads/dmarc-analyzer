@@ -1,13 +1,17 @@
 services:
   dmarc-analyzer:
     build: .
-    ports:
-      - "3000:3000"
     environment:
-  - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - NODE_ENV=production
     volumes:
       - dmarc-data:/data
     restart: unless-stopped
 
 volumes:
   dmarc-data:
+
+# Cloudflare tunnel-nettverk brukt av bedriftens sandbox-host
+networks:
+  default:
+    name: asai-proj-dmarc-sjekk

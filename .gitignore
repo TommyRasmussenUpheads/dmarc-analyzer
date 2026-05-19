@@ -4,12 +4,21 @@ node_modules/
 # Miljøvariabler og hemmeligheter
 .env
 .env.*
+.env.local
 
 # Database
 *.db
 *.db-shm
 *.db-wal
 data/
+
+# Build-output
+.next/
+dist/
+build/
+coverage/
+.turbo/
+.wrangler/
 
 # Docker
 *.log
