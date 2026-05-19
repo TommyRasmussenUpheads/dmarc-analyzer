@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         service:
-          - web
+          - dmarc-analyzer
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
@@ -31,7 +31,7 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: .
-          file: ./${{ matrix.service }}/Dockerfile
+          file: ./Dockerfile
           push: true
           tags: |
             ${{ steps.meta.outputs.image }}:latest
