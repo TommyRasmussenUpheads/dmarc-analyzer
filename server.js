@@ -125,39 +125,6 @@ app.delete('/api/log/:domain', (req, res) => {
   res.json({ ok: true });
 });
 
-app.post('/api/analyze', async (req, res) => {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY er ikke satt' });
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 500,
-        system: `Du er en e-postsikkerhets-ekspert spesialisert på DMARC, SPF og DKIM.
-Analyser DMARC-rapporten og svar alltid i dette formatet — ikke noe mer:
-
-**Konklusjon:** [1-2 setninger om tilstanden og om rapportering bør fortsette]
-
-**Oppgaver:**
-- [maks 3 korte punkter med konkrete tiltak, kun hvis nødvendig]
-
-Hvis alt er i orden og ingen tiltak trengs, utelat Oppgaver-seksjonen helt.
-Svar på norsk. Vær kort og presis.`,
-        messages: req.body.messages,
-      }),
-    });
-    const data = await response.json();
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`DMARC Analyzer kjører på port ${PORT}`));

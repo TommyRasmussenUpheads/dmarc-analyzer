@@ -151,13 +151,9 @@
             <th>IP-adresse</th><th>Antall</th><th>SPF</th><th>DKIM</th><th>Disposisjon</th>
           </tr></thead><tbody id="records-list"></tbody></table>
         </div>
-        <button class="btn btn-primary" id="analyze-btn" onclick="runAnalysis()">
-          <i class="ti ti-sparkles"></i> Analyser med Claude AI
+         <button class="btn btn-primary" id="reset-btn" onclick="resetAll()">
+          <i class="ti ti-refresh"></i> Nullstill — last inn ny fil
         </button>
-      </div>
-      <div class="card hidden" id="ai-card">
-        <div class="card-title">AI-analyse</div>
-        <div class="ai-output" id="ai-content"></div>
       </div>
     </div>
   </div>
@@ -270,51 +266,28 @@ function parseAndDisplay(xmlText) {
       <td class="disp-${r.disposition}">${r.disposition}</td>
     </tr>`).join('');
   document.getElementById('results').classList.remove('hidden');
-  document.getElementById('ai-card').classList.add('hidden');
+  logToServer();
 }
 
-// ---- ANALYZE ----
-async function runAnalysis() {
-  if (!parsedData) return;
-  const btn = document.getElementById('analyze-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Analyserer...';
+// ---- LOG & RESET ----
+async function logToServer() {
   const d = parsedData;
-  const prompt = `Analyser denne DMARC-rapporten:\n\n**Domene:** ${d.domain}\n**Policy:** p=${d.policy}${d.sp !== '—' ? ', sp=' + d.sp : ''}${d.pct !== '—' ? ', pct=' + d.pct + '%' : ''}\n**Rapporterende org:** ${d.orgName}\n**Periode:** ${formatDate(d.dateBegin)} – ${formatDate(d.dateEnd)}\n**Totale meldinger:** ${d.total}\n**DMARC pass-rate:** ${d.passRate}%
-**SPF pass-rate:** ${d.spfPassRate}%
-**DKIM pass-rate:** ${d.dkimPassRate}%\n**Feiler begge:** ${d.failed}\n**Sendere:**\n${d.records.slice(0,15).map(r => `- ${r.ip}: ${r.count} | SPF: ${r.spf} | DKIM: ${r.dkim} | Disp: ${r.disposition}`).join('\n')}`;
+  if (!d) return;
+  await fetch('/api/log', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      domain: d.domain, passRate: d.passRate, spfPassRate: d.spfPassRate,
+      dkimPassRate: d.dkimPassRate, totalMessages: d.total,
+      policy: d.policy, orgName: d.orgName, aiConclusion: null,
+    }),
+  });
+}
 
-  const aiCard = document.getElementById('ai-card');
-  const aiContent = document.getElementById('ai-content');
-  aiCard.classList.remove('hidden');
-  aiContent.innerHTML = '<div style="color:var(--text-muted)">Analyserer...</div>';
-
-  try {
-    const resp = await fetch('/api/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] }),
-    });
-    const data = await resp.json();
-    const text = String(data.content?.find(b => b.type === 'text')?.text || data.error || JSON.stringify(data));
-    aiContent.innerHTML = simpleMarkdown(text);
-
-    // Lagre til logg
-    await fetch('/api/log', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        domain: d.domain, passRate: d.passRate, spfPassRate: d.spfPassRate, dkimPassRate: d.dkimPassRate, totalMessages: d.total,
-        policy: d.policy, orgName: d.orgName,
-        aiConclusion: text.split('\n').find(l => l.includes('Konklusjon:'))?.replace(/\*\*/g, '').replace('Konklusjon:', '').trim() || text.slice(0, 200),
-      }),
-    });
-  } catch(err) {
-    aiContent.innerHTML = `<div style="color:var(--danger)">Feil: ${err.message}</div>`;
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = '<i class="ti ti-sparkles"></i> Analyser på nytt';
+function resetAll() {
+  parsedData = null;
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('file-input').value = '';
 }
 
 // ---- LOG ----
