@@ -1,5 +1,6 @@
 services:
   dmarc-analyzer:
+    image: ghcr.io/upheads-int/dmarc-sjekk/dmarc-analyzer:latest
     build: .
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
@@ -11,7 +12,6 @@ services:
 volumes:
   dmarc-data:
 
-# Cloudflare tunnel-nettverk brukt av bedriftens sandbox-host
 networks:
   default:
     name: asai-proj-dmarc-sjekk
