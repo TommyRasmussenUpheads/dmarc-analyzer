@@ -3,6 +3,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import Database from 'better-sqlite3';
 import { mkdirSync } from 'fs';
+import { promises as dnsPromises } from 'dns';
 
 const app = express();
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -22,6 +23,14 @@ db.exec(`
     policy TEXT,
     org_name TEXT,
     ai_conclusion TEXT
+  )
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS rdns (
+    ip TEXT PRIMARY KEY,
+    ptr TEXT,
+    updated_at TEXT
   )
 `);
 
@@ -118,6 +127,30 @@ app.get('/api/log', (req, res) => {
 app.get('/api/log/:domain', (req, res) => {
   const rows = db.prepare('SELECT * FROM checks WHERE domain = ? ORDER BY checked_at DESC').all(req.params.domain);
   res.json(rows);
+});
+
+app.get('/api/rdns', async (req, res) => {
+  const ip = req.query.ip;
+  if (!ip) return res.status(400).json({ error: 'ip påkrevd' });
+
+  const cached = db.prepare('SELECT ptr, updated_at FROM rdns WHERE ip = ?').get(ip);
+  const now = new Date();
+  if (cached) {
+    try {
+      const ageMinutes = (now - new Date(cached.updated_at)) / 60000;
+      if (ageMinutes < 5) return res.json({ ip, ptr: cached.ptr });
+    } catch(e) { /* fallthrough til oppslag */ }
+  }
+
+  try {
+    const names = await dnsPromises.reverse(ip);
+    const ptr = Array.isArray(names) && names.length ? names[0] : '';
+    db.prepare('INSERT OR REPLACE INTO rdns (ip, ptr, updated_at) VALUES (?, ?, ?)').run(ip, ptr, now.toISOString());
+    return res.json({ ip, ptr });
+  } catch (e) {
+    db.prepare('INSERT OR REPLACE INTO rdns (ip, ptr, updated_at) VALUES (?, ?, ?)').run(ip, '', now.toISOString());
+    return res.json({ ip, ptr: '' });
+  }
 });
 
 app.delete('/api/log/:domain', (req, res) => {

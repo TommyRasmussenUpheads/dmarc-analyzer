@@ -148,7 +148,7 @@
         <div class="card-title">Sendere i rapporten</div>
         <div class="table-wrap">
           <table><thead><tr>
-            <th>IP-adresse</th><th>Antall</th><th>SPF</th><th>DKIM</th><th>Disposisjon</th>
+            <th>Vertnavn</th><th>IP-adresse</th><th>Antall</th><th>SPF</th><th>DKIM</th><th>Disposisjon</th>
           </tr></thead><tbody id="records-list"></tbody></table>
         </div>
          <button class="btn btn-primary" id="reset-btn" onclick="resetAll()">
@@ -259,12 +259,22 @@ function parseAndDisplay(xmlText) {
     <div class="domain-meta">Rapportert av ${orgName} &nbsp;·&nbsp; ${formatDate(dateBegin)} – ${formatDate(dateEnd)}</div>`;
   document.getElementById('records-list').innerHTML = records.slice(0, 30).map(r => `
     <tr>
+      <td class="mono hostname" data-ip="${r.ip}">Laster...</td>
       <td class="mono">${r.ip}</td>
       <td>${r.count.toLocaleString('no-NO')}</td>
       <td><span class="dot dot-${r.spf === 'pass' ? 'pass' : 'fail'}"></span>${r.spf}</td>
       <td><span class="dot dot-${r.dkim === 'pass' ? 'pass' : 'fail'}"></span>${r.dkim}</td>
       <td class="disp-${r.disposition}">${r.disposition}</td>
     </tr>`).join('');
+  // Hent reverse DNS for synlige IP-er og oppdater vertsnavn
+  records.slice(0, 30).forEach(r => {
+    fetch('/api/rdns?ip=' + encodeURIComponent(r.ip)).then(resp => resp.json()).then(data => {
+      const name = data && data.ptr ? data.ptr : r.ip;
+      document.querySelectorAll(`td.hostname[data-ip="${r.ip}"]`).forEach(el => el.textContent = name);
+    }).catch(() => {
+      document.querySelectorAll(`td.hostname[data-ip="${r.ip}"]`).forEach(el => el.textContent = r.ip);
+    });
+  });
   document.getElementById('results').classList.remove('hidden');
   logToServer();
 }
