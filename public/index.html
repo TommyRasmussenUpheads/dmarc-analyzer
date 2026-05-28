@@ -112,6 +112,221 @@
     .history-table tr:last-child td { border-bottom: none; }
     .empty-state { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 14px; }
     .empty-state i { font-size: 32px; display: block; margin-bottom: .75rem; }
+
+    /* ===== AUDIT TOLKNING ===== */
+    .audit-input-area {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .audit-input-area label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: .5rem;
+    }
+    #audit-json-input {
+      width: 100%;
+      min-height: 180px;
+      font-family: var(--mono);
+      font-size: 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      padding: .75rem 1rem;
+      resize: vertical;
+      outline: none;
+      transition: border-color .15s;
+    }
+    #audit-json-input:focus { border-color: var(--accent); }
+    #audit-json-input.error { border-color: var(--danger); }
+
+    .audit-actions {
+      display: flex;
+      gap: .5rem;
+      margin-top: .75rem;
+    }
+    .btn-audit {
+      background: var(--accent);
+      color: #fff;
+      flex: 1;
+      justify-content: center;
+    }
+    .btn-audit:hover { opacity: .9; }
+    .btn-clear-audit {
+      background: var(--surface-2);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+    .btn-clear-audit:hover { color: var(--text); border-color: var(--text-muted); }
+
+    #audit-error {
+      color: var(--danger);
+      font-size: 13px;
+      margin-top: .5rem;
+      display: none;
+    }
+
+    /* Rapport */
+    #audit-report { display: none; }
+
+    .audit-summary-bar {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      border: 1px solid transparent;
+    }
+    .audit-summary-bar.all-ok {
+      background: var(--success-bg);
+      border-color: rgba(22,163,74,.2);
+    }
+    .audit-summary-bar.has-critical {
+      background: var(--danger-bg);
+      border-color: rgba(220,38,38,.2);
+    }
+    .audit-summary-bar.has-warning {
+      background: var(--warning-bg);
+      border-color: rgba(217,119,6,.2);
+    }
+    .audit-summary-icon { font-size: 28px; }
+    .audit-summary-text { flex: 1; }
+    .audit-summary-title { font-size: 15px; font-weight: 600; }
+    .audit-summary-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    .audit-domain-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .audit-domain-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+    .audit-domain-name { font-size: 15px; font-weight: 600; flex: 1; }
+    .audit-domain-source {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--mono);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+    .status-pill.ok { background: var(--success-bg); color: var(--success); }
+    .status-pill.warning { background: var(--warning-bg); color: var(--warning); }
+    .status-pill.error, .status-pill.critical { background: var(--danger-bg); color: var(--danger); }
+    .status-pill.missing { background: var(--danger-bg); color: var(--danger); }
+    .status-pill.info { background: var(--accent-bg); color: var(--accent); }
+
+    .audit-checks {
+      padding: 1rem 1.25rem;
+      display: grid;
+      gap: .625rem;
+    }
+
+    .audit-check-row {
+      display: flex;
+      align-items: flex-start;
+      gap: .75rem;
+      padding: .75rem 1rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .audit-check-row.check-ok { border-color: rgba(22,163,74,.2); background: var(--success-bg); }
+    .audit-check-row.check-warning { border-color: rgba(217,119,6,.2); background: var(--warning-bg); }
+    .audit-check-row.check-error { border-color: rgba(220,38,38,.2); background: var(--danger-bg); }
+    .audit-check-row.check-missing { border-color: rgba(220,38,38,.2); background: var(--danger-bg); }
+
+    .audit-check-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .check-ok .audit-check-icon { color: var(--success); }
+    .check-warning .audit-check-icon { color: var(--warning); }
+    .check-error .audit-check-icon, .check-missing .audit-check-icon { color: var(--danger); }
+
+    .audit-check-body { flex: 1; min-width: 0; }
+    .audit-check-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 3px;
+    }
+    .check-ok .audit-check-label { color: var(--success); }
+    .check-warning .audit-check-label { color: var(--warning); }
+    .check-error .audit-check-label, .check-missing .audit-check-label { color: var(--danger); }
+
+    .audit-check-msg { font-size: 13px; color: var(--text); margin-bottom: 4px; }
+    .audit-check-action {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: flex-start;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    .audit-check-action i { font-size: 13px; margin-top: 1px; flex-shrink: 0; }
+
+    .audit-record-detail {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      word-break: break-all;
+    }
+
+    .audit-actions-summary {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-top: .5rem;
+    }
+    .audit-actions-summary .card-title { margin-bottom: .75rem; }
+    .action-item {
+      display: flex;
+      align-items: flex-start;
+      gap: .625rem;
+      padding: .5rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .action-item:last-child { border-bottom: none; }
+    .action-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .action-num.critical { background: var(--danger-bg); color: var(--danger); }
+    .action-num.warning { background: var(--warning-bg); color: var(--warning); }
+    .action-num.ok { background: var(--success-bg); color: var(--success); }
   </style>
 </head>
 <body>
@@ -124,6 +339,7 @@
   <div class="tabs">
     <button class="tab active" onclick="switchTab('analyze')"><i class="ti ti-upload" style="margin-right:5px"></i>Analyser</button>
     <button class="tab" onclick="switchTab('log')" id="log-tab"><i class="ti ti-history" style="margin-right:5px"></i>Logg</button>
+    <button class="tab" onclick="switchTab('audit')" id="audit-tab"><i class="ti ti-clipboard-check" style="margin-right:5px"></i>Audit-tolkning</button>
   </div>
 
   <!-- ANALYSER TAB -->
@@ -172,6 +388,25 @@
       </div>
     </div>
   </div>
+
+  <!-- AUDIT TOLKNING TAB -->
+  <div class="tab-content" id="tab-audit">
+    <div class="audit-input-area">
+      <label><i class="ti ti-code" style="margin-right:5px"></i>Lim inn Audit-JSON fra verktøyet</label>
+      <textarea id="audit-json-input" placeholder='{ "results": [...], "domain_details": [...] }'></textarea>
+      <div id="audit-error"></div>
+      <div class="audit-actions">
+        <button class="btn btn-audit" onclick="runAuditInterpretation()">
+          <i class="ti ti-analyze"></i> Tolk audit
+        </button>
+        <button class="btn btn-clear-audit btn-sm" onclick="clearAudit()">
+          <i class="ti ti-x"></i> Tøm
+        </button>
+      </div>
+    </div>
+
+    <div id="audit-report"></div>
+  </div>
 </div>
 
 <script>
@@ -179,7 +414,8 @@ let parsedData = null;
 
 // ---- TABS ----
 function switchTab(name) {
-  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['analyze','log'][i] === name));
+  const names = ['analyze','log','audit'];
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', names[i] === name));
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   if (name === 'log') loadLog();
@@ -266,7 +502,6 @@ function parseAndDisplay(xmlText) {
       <td><span class="dot dot-${r.dkim === 'pass' ? 'pass' : 'fail'}"></span>${r.dkim}</td>
       <td class="disp-${r.disposition}">${r.disposition}</td>
     </tr>`).join('');
-  // Hent reverse DNS for synlige IP-er og oppdater vertsnavn
   records.slice(0, 30).forEach(r => {
     fetch('/api/rdns?ip=' + encodeURIComponent(r.ip)).then(resp => resp.json()).then(data => {
       const name = data && data.ptr ? data.ptr : r.ip;
@@ -419,6 +654,405 @@ function simpleMarkdown(md) {
     .replace(/^(?!<[hup]|<\/[hup])(.+)$/gm, '<p>$1</p>')
     .replace(/<p><\/p>/g, '')
     .trim();
+}
+
+// ================================================================
+// AUDIT TOLKNING — regelbasert motor
+// ================================================================
+
+function clearAudit() {
+  document.getElementById('audit-json-input').value = '';
+  document.getElementById('audit-json-input').classList.remove('error');
+  document.getElementById('audit-error').style.display = 'none';
+  document.getElementById('audit-report').style.display = 'none';
+  document.getElementById('audit-report').innerHTML = '';
+}
+
+function runAuditInterpretation() {
+  const raw = document.getElementById('audit-json-input').value.trim();
+  const errEl = document.getElementById('audit-error');
+  const inputEl = document.getElementById('audit-json-input');
+
+  errEl.style.display = 'none';
+  inputEl.classList.remove('error');
+
+  if (!raw) {
+    errEl.textContent = 'Lim inn JSON-innhold først.';
+    errEl.style.display = 'block';
+    inputEl.classList.add('error');
+    return;
+  }
+
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch(e) {
+    errEl.textContent = 'Ugyldig JSON: ' + e.message;
+    errEl.style.display = 'block';
+    inputEl.classList.add('error');
+    return;
+  }
+
+  if (!data.domain_details || !Array.isArray(data.domain_details)) {
+    errEl.textContent = 'Finner ikke "domain_details" i JSON-en. Sjekk at du limer inn komplett audit-output.';
+    errEl.style.display = 'block';
+    inputEl.classList.add('error');
+    return;
+  }
+
+  const report = buildAuditReport(data);
+  const reportEl = document.getElementById('audit-report');
+  reportEl.style.display = 'block';
+  reportEl.innerHTML = report;
+}
+
+function severityClass(sev) {
+  if (!sev) return 'ok';
+  const s = sev.toLowerCase();
+  if (s === 'critical' || s === 'error' || s === 'missing') return 'error';
+  if (s === 'warning') return 'warning';
+  return 'ok';
+}
+
+function severityIcon(sev) {
+  if (!sev) return 'ti-circle-check';
+  const s = sev.toLowerCase();
+  if (s === 'critical' || s === 'error') return 'ti-alert-circle';
+  if (s === 'missing') return 'ti-circle-x';
+  if (s === 'warning') return 'ti-alert-triangle';
+  return 'ti-circle-check';
+}
+
+// Konkrete handlingsanbefalinger basert på feiltype
+function getActionForCheck(key, status, message, tags) {
+  const k = (key || '').toUpperCase();
+  const s = (status || '').toLowerCase();
+  const msg = (message || '').toLowerCase();
+
+  if (k === 'DMARC' || k.includes('DMARC')) {
+    if (s === 'missing') {
+      return 'Opprett en DMARC-post i DNS. Anbefalt startpunkt: <code>v=DMARC1; p=none; rua=mailto:dmarc@ditt-domene.no; fo=1;</code> — dette aktiverer overvåkingsmodus uten å blokkere e-post.';
+    }
+    if (msg.includes('none')) {
+      return 'Endre DMARC-policyen fra <code>p=none</code> til <code>p=quarantine</code> når du har bekreftet at SPF og DKIM fungerer korrekt. Neste steg er <code>p=reject</code> for full beskyttelse.';
+    }
+    if (msg.includes('rua') || msg.includes('rapport')) {
+      return 'Legg til en <code>rua</code>-tag i DMARC-posten for å motta aggregerte rapporter: <code>rua=mailto:dmarc@ditt-domene.no</code>';
+    }
+    if (msg.includes('pct')) {
+      return 'Øk <code>pct</code>-verdien gradvis mot 100 etter hvert som du verifiserer at legitim e-post ikke påvirkes.';
+    }
+  }
+
+  if (k === 'SPF') {
+    if (s === 'missing') {
+      return 'Opprett en SPF-post i DNS. For Microsoft 365: <code>v=spf1 include:spf.protection.outlook.com -all</code>';
+    }
+    if (msg.includes('~all') || msg.includes('softfail')) {
+      return 'Bytt fra <code>~all</code> (softfail) til <code>-all</code> (hardfail) når du er sikker på at alle legitime avsendere er inkludert i SPF-posten.';
+    }
+    if (msg.includes('for mange') || msg.includes('too many') || msg.includes('lookup')) {
+      return 'SPF-posten har for mange DNS-oppslag (maks 10). Konsolider <code>include:</code>-referanser eller bruk en SPF-flattening-tjeneste.';
+    }
+    if (msg.includes('multiple') || msg.includes('flere')) {
+      return 'Det finnes flere SPF-poster for dette domenet. Det er bare tillatt med én. Slett de gamle og behold den korrekte.';
+    }
+    return 'Gjennomgå SPF-posten og sørg for at alle autoriserte e-postservere er inkludert.';
+  }
+
+  if (k === 'DKIM') {
+    if (s === 'missing') {
+      return 'Aktiver DKIM-signering. For Microsoft 365: gå til Security-portalen (security.microsoft.com) → Email & collaboration → Policies → DKIM, og aktiver for domenet.';
+    }
+    if (msg.includes('selector2') || msg.includes('selector')) {
+      return 'Sjekk at begge DKIM-selectors (selector1 og selector2) er korrekt konfigurert i DNS. For M365 roteres disse automatisk.';
+    }
+    return 'Verifiser at DKIM-nøkkelen er korrekt publisert i DNS og at signeringen er aktivert hos e-postleverandøren.';
+  }
+
+  if (k === 'MX') {
+    if (s === 'missing') return 'Opprett MX-poster i DNS som peker til e-postserverne for dette domenet.';
+    return 'Gjennomgå MX-konfigurasjonen.';
+  }
+
+  return null;
+}
+
+function buildDomainCard(domainDetail, resultsForDomain) {
+  const dom = domainDetail.domain;
+  const source = domainDetail.source || '';
+  const overallStatus = domainDetail.status || 'unknown';
+  const provider = domainDetail.mx?.provider || '';
+  const isMicrosoft = domainDetail.mx?.is_microsoft || false;
+
+  // Samle alle funn
+  const checks = [];
+
+  // --- DMARC ---
+  const dmarc = domainDetail.dmarc || {};
+  if (dmarc.status === 'error' || (dmarc.errors && dmarc.errors.length)) {
+    const errMsg = (dmarc.errors && dmarc.errors[0]) || 'DMARC-feil';
+    checks.push({
+      key: 'DMARC',
+      status: dmarc.record === null ? 'missing' : 'error',
+      severity: 'critical',
+      message: errMsg,
+      record: dmarc.record,
+      tags: dmarc.tags,
+    });
+  } else if (dmarc.status === 'warning' || (dmarc.warnings && dmarc.warnings.length)) {
+    const warnMsg = (dmarc.warnings && dmarc.warnings[0]) || 'DMARC-advarsel';
+    checks.push({
+      key: 'DMARC',
+      status: 'warning',
+      severity: 'warning',
+      message: warnMsg,
+      record: dmarc.record,
+      tags: dmarc.tags,
+    });
+  } else {
+    checks.push({
+      key: 'DMARC',
+      status: 'ok',
+      severity: null,
+      message: dmarc.record ? `Policy: ${dmarc.tags?.p || 'satt'}` : 'OK',
+      record: dmarc.record,
+      tags: dmarc.tags,
+    });
+  }
+
+  // --- SPF ---
+  const spf = domainDetail.spf || {};
+  if (spf.errors && spf.errors.length) {
+    checks.push({
+      key: 'SPF',
+      status: 'error',
+      severity: 'critical',
+      message: spf.errors[0],
+      record: spf.record,
+    });
+  } else if (spf.warnings && spf.warnings.length) {
+    checks.push({
+      key: 'SPF',
+      status: 'warning',
+      severity: 'warning',
+      message: spf.warnings[0],
+      record: spf.record,
+    });
+  } else {
+    checks.push({
+      key: 'SPF',
+      status: 'ok',
+      severity: null,
+      message: spf.record || 'OK',
+      record: spf.record,
+    });
+  }
+
+  // --- DKIM ---
+  const dkim = domainDetail.dkim || {};
+  if (dkim.errors && dkim.errors.length) {
+    checks.push({
+      key: 'DKIM',
+      status: 'error',
+      severity: 'critical',
+      message: dkim.errors[0],
+      record: null,
+    });
+  } else if (dkim.status === 'warning' || (dkim.warnings && dkim.warnings.length)) {
+    checks.push({
+      key: 'DKIM',
+      status: 'warning',
+      severity: 'warning',
+      message: (dkim.warnings && dkim.warnings[0]) || 'DKIM-advarsel',
+      record: null,
+    });
+  } else {
+    const sel1 = dkim.selector1 || null;
+    const sel2 = dkim.selector2 || null;
+    const selInfo = [sel1 && 'selector1 ✓', sel2 && 'selector2 ✓'].filter(Boolean).join(', ') || 'OK';
+    checks.push({
+      key: 'DKIM',
+      status: 'ok',
+      severity: null,
+      message: selInfo,
+      record: null,
+    });
+  }
+
+  // --- MX-advarsler ---
+  const mx = domainDetail.mx || {};
+  if (mx.warnings && mx.warnings.length) {
+    mx.warnings.forEach(w => {
+      checks.push({ key: 'MX', status: 'warning', severity: 'warning', message: w, record: null });
+    });
+  }
+
+  // Finn domenets overordnede alvorlighetsgrad
+  const hasCritical = checks.some(c => c.severity === 'critical');
+  const hasWarning = checks.some(c => c.severity === 'warning');
+
+  const headerStatusClass = hasCritical ? 'error' : hasWarning ? 'warning' : 'ok';
+  const headerStatusLabel = hasCritical ? 'Kritiske feil' : hasWarning ? 'Advarsler' : 'OK';
+  const headerStatusIcon = hasCritical ? 'ti-alert-circle' : hasWarning ? 'ti-alert-triangle' : 'ti-circle-check';
+
+  let checksHtml = checks.map(check => {
+    const sc = severityClass(check.status);
+    const icon = check.status === 'ok' ? 'ti-circle-check' : severityIcon(check.severity);
+    const action = check.status !== 'ok' ? getActionForCheck(check.key, check.status, check.message, check.tags) : null;
+    const recordHtml = check.record
+      ? `<div class="audit-record-detail">${escHtml(check.record)}</div>`
+      : '';
+    const actionHtml = action
+      ? `<div class="audit-check-action"><i class="ti ti-arrow-right"></i><span>${action}</span></div>`
+      : '';
+    return `
+      <div class="audit-check-row check-${sc}">
+        <i class="ti ${icon} audit-check-icon"></i>
+        <div class="audit-check-body">
+          <div class="audit-check-label">${escHtml(check.key)}</div>
+          <div class="audit-check-msg">${escHtml(check.message)}</div>
+          ${recordHtml}
+          ${actionHtml}
+        </div>
+      </div>`;
+  }).join('');
+
+  const providerBadge = provider
+    ? `<span class="status-pill info" style="margin-left:auto">${escHtml(provider)}</span>`
+    : '';
+
+  return `
+    <div class="audit-domain-card">
+      <div class="audit-domain-header">
+        <i class="ti ti-world" style="color:var(--text-muted)"></i>
+        <span class="audit-domain-name">${escHtml(dom)}</span>
+        ${source ? `<span class="audit-domain-source">${escHtml(source)}</span>` : ''}
+        <span class="status-pill ${headerStatusClass}">
+          <i class="ti ${headerStatusIcon}"></i> ${headerStatusLabel}
+        </span>
+        ${providerBadge}
+      </div>
+      <div class="audit-checks">${checksHtml}</div>
+    </div>`;
+}
+
+function buildAuditReport(data) {
+  const domains = data.domain_details || [];
+  const results = data.results || [];
+
+  // Bygg et kart fra domain_details for rask oppslag
+  const resultMap = {};
+  results.forEach(r => {
+    const domainMatch = (r.policy || '').replace(/^DMARC - /i, '').trim();
+    resultMap[domainMatch] = r.result || [];
+  });
+
+  // Tell kritiske/advarsler på tvers
+  let totalCritical = 0;
+  let totalWarning = 0;
+  let totalOk = 0;
+
+  domains.forEach(d => {
+    const dmarc = d.dmarc || {};
+    const spf = d.spf || {};
+    const dkim = d.dkim || {};
+    if ((dmarc.errors && dmarc.errors.length) || dmarc.record === null) totalCritical++;
+    else if (dmarc.status === 'warning') totalWarning++;
+    else totalOk++;
+    if (spf.errors && spf.errors.length) totalCritical++;
+    else if (spf.warnings && spf.warnings.length) totalWarning++;
+    else totalOk++;
+    if (dkim.errors && dkim.errors.length) totalCritical++;
+    else if (dkim.status === 'warning') totalWarning++;
+    else totalOk++;
+  });
+
+  // Oppsummering
+  const hasCritical = totalCritical > 0;
+  const hasWarning = totalWarning > 0;
+  const summaryClass = hasCritical ? 'has-critical' : hasWarning ? 'has-warning' : 'all-ok';
+  const summaryIcon = hasCritical ? 'ti-alert-circle' : hasWarning ? 'ti-alert-triangle' : 'ti-shield-check';
+  const summaryIconColor = hasCritical ? 'var(--danger)' : hasWarning ? 'var(--warning)' : 'var(--success)';
+  const summaryTitle = hasCritical
+    ? `${totalCritical} kritisk${totalCritical !== 1 ? 'e' : ''} feil må løses`
+    : hasWarning
+    ? `${totalWarning} advarsel${totalWarning !== 1 ? 'er' : ''} bør adresseres`
+    : 'Alle sjekker er OK — e-postautentisering ser bra ut!';
+  const summaryDomains = domains.length;
+  const summaryChecks = totalCritical + totalWarning + totalOk;
+  const summarySub = `${summaryDomains} domene${summaryDomains !== 1 ? 'r' : ''} analysert · ${summaryChecks} sjekker utført · ${totalOk} OK · ${totalWarning} advarsler · ${totalCritical} kritiske`;
+
+  const summaryHtml = `
+    <div class="audit-summary-bar ${summaryClass}">
+      <i class="ti ${summaryIcon} audit-summary-icon" style="color:${summaryIconColor}"></i>
+      <div class="audit-summary-text">
+        <div class="audit-summary-title">${summaryTitle}</div>
+        <div class="audit-summary-sub">${summarySub}</div>
+      </div>
+    </div>`;
+
+  // Domene-kort
+  const domainCardsHtml = domains.map(d => buildDomainCard(d, resultMap[d.domain] || [])).join('');
+
+  // Prioritert handlingsliste
+  const actions = [];
+  domains.forEach(d => {
+    const dmarc = d.dmarc || {};
+    const spf = d.spf || {};
+    const dkim = d.dkim || {};
+
+    if (dmarc.record === null || (dmarc.errors && dmarc.errors.length)) {
+      actions.push({ severity: 'critical', domain: d.domain, text: `<strong>${d.domain}</strong> — Ingen DMARC-post finnes. Opprett <code>v=DMARC1; p=none; rua=mailto:dmarc@${d.domain}; fo=1;</code> som startpunkt.` });
+    } else if (dmarc.status === 'warning') {
+      const p = dmarc.tags?.p || 'none';
+      if (p === 'none') {
+        actions.push({ severity: 'warning', domain: d.domain, text: `<strong>${d.domain}</strong> — DMARC er satt til <code>p=none</code>. Etter å ha verifisert SPF og DKIM, oppgrader til <code>p=quarantine</code>, deretter <code>p=reject</code>.` });
+      }
+    }
+    if (spf.errors && spf.errors.length) {
+      actions.push({ severity: 'critical', domain: d.domain, text: `<strong>${d.domain}</strong> — SPF-feil: ${spf.errors[0]}` });
+    } else if (spf.warnings && spf.warnings.length) {
+      actions.push({ severity: 'warning', domain: d.domain, text: `<strong>${d.domain}</strong> — SPF-advarsel: ${spf.warnings[0]}` });
+    }
+    if (dkim.errors && dkim.errors.length) {
+      actions.push({ severity: 'critical', domain: d.domain, text: `<strong>${d.domain}</strong> — DKIM-feil: ${dkim.errors[0]}` });
+    }
+  });
+
+  let actionsHtml = '';
+  if (actions.length > 0) {
+    // Kritiske først, så advarsler
+    const sorted = [...actions.filter(a => a.severity === 'critical'), ...actions.filter(a => a.severity === 'warning')];
+    actionsHtml = `
+      <div class="audit-actions-summary">
+        <div class="card-title"><i class="ti ti-list-check" style="margin-right:5px"></i>Prioritert handlingsliste</div>
+        ${sorted.map((a, i) => `
+          <div class="action-item">
+            <div class="action-num ${a.severity}">${i + 1}</div>
+            <div style="flex:1">${a.text}</div>
+          </div>`).join('')}
+      </div>`;
+  } else {
+    actionsHtml = `
+      <div class="audit-actions-summary" style="background:var(--success-bg);border-color:rgba(22,163,74,.2)">
+        <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:var(--success)">
+          <i class="ti ti-circle-check" style="font-size:20px"></i>
+          <strong>Ingen tiltak nødvendig — e-postautentisering er korrekt konfigurert for alle domener.</strong>
+        </div>
+      </div>`;
+  }
+
+  return summaryHtml + domainCardsHtml + actionsHtml;
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 </script>
 </body>
